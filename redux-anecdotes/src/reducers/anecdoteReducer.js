@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, current } from "@reduxjs/toolkit";
 
 const anecdotesAtStart = [
   "If it hurts, do it more often",
@@ -26,16 +26,18 @@ const noteSlice = createSlice({
   initialState,
   reducers: {
     voteAnecdote(state, action) {
-      const id = action.payload.id;
+      const id = action.payload;
       const anecdoteToChange = state.find((n) => n.id === id);
       const changedAnecdote = {
         ...anecdoteToChange,
         votes: anecdoteToChange.votes + 1,
       };
-      return state.map((n) => (n.id !== id ? n : changedAnecdote));
+      return [...state]
+        .map((n) => (n.id !== id ? n : changedAnecdote))
+        .sort((a, b) => b.votes - a.votes);
     },
     addAnecdote(state, action) {
-      const content = action.payload.content;
+      const content = action.payload;
       const anecdote = {
         content,
         id: getId(),
