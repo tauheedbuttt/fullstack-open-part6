@@ -1,3 +1,5 @@
+import { createSlice } from "@reduxjs/toolkit";
+
 const anecdotesAtStart = [
   "If it hurts, do it more often",
   "Adding manpower to a late software project makes it later!",
@@ -17,64 +19,32 @@ const asObject = (anecdote) => {
   };
 };
 
-const initialState = {
-  anecdotes: anecdotesAtStart.map(asObject),
-  filter: "",
-};
+const initialState = anecdotesAtStart.map(asObject);
 
-export const anecdoteReducer = (state = initialState.anecdotes, action) => {
-  console.log("state now: ", state);
-  console.log("action", action);
-
-  switch (action.type) {
-    case "VOTE": {
-      const { id } = action.payload;
-      return state.map((anecdote) =>
-        anecdote.id === id
-          ? { ...anecdote, votes: anecdote.votes + 1 }
-          : anecdote
-      );
-    }
-    case "ADD_ANECDOTE": {
-      const { content } = action.payload;
-      const newAnecdote = {
+const noteSlice = createSlice({
+  name: "notes",
+  initialState,
+  reducers: {
+    voteAnecdote(state, action) {
+      const id = action.payload.id;
+      const anecdoteToChange = state.find((n) => n.id === id);
+      const changedAnecdote = {
+        ...anecdoteToChange,
+        votes: anecdoteToChange.votes + 1,
+      };
+      return state.map((n) => (n.id !== id ? n : changedAnecdote));
+    },
+    addAnecdote(state, action) {
+      const content = action.payload.content;
+      const anecdote = {
         content,
         id: getId(),
         votes: 0,
       };
-      return [...state, newAnecdote];
-    }
-    default:
-      return state;
-  }
-};
+      return [...state, anecdote];
+    },
+  },
+});
 
-export const filterReducer = (state = "", action) => {
-  switch (action.type) {
-    case "SET_FILTER":
-      return action.payload;
-    default:
-      return state;
-  }
-};
-
-export const voteAnecdote = (id) => {
-  return {
-    type: "VOTE",
-    payload: { id },
-  };
-};
-
-export const addAnecdote = (content) => {
-  return {
-    type: "ADD_ANECDOTE",
-    payload: { content },
-  };
-};
-
-export const setFilter = (filter) => {
-  return {
-    type: "SET_FILTER",
-    payload: filter,
-  };
-};
+export const { voteAnecdote, addAnecdote } = noteSlice.actions;
+export default noteSlice.reducer;
